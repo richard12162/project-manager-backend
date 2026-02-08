@@ -1,3 +1,18 @@
 spring:
   application:
     name: Project Management
+  datasource:
+    url: jdbc:postgresql://localhost:5432/project_management
+    username: app
+    password: app
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  flyway:
+    enabled: true
