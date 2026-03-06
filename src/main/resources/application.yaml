@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: Project Management
   datasource:
     url: jdbc:postgresql://localhost:5432/project_management
     username: app
@@ -16,3 +14,8 @@ spring:
 
   flyway:
     enabled: true
+
+app:
+  jwt:
+    secret: "change-this-dev-secret-change-this-dev-secret-change-this-dev-secret"
+    expiration-ms: 3600000

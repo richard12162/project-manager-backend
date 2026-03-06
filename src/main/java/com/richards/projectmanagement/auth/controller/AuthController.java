@@ -1,12 +1,14 @@
 package com.richards.projectmanagement.auth.controller;
 
+import com.richards.projectmanagement.auth.dto.AuthResponse;
+import com.richards.projectmanagement.auth.dto.CurrentUserResponse;
 import com.richards.projectmanagement.auth.dto.LoginRequest;
-import com.richards.projectmanagement.auth.dto.LoginResponse;
 import com.richards.projectmanagement.auth.dto.RegisterRequest;
 import com.richards.projectmanagement.auth.dto.RegisterResponse;
 import com.richards.projectmanagement.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,7 +27,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserResponse> me(Authentication authentication) {
+        return ResponseEntity.ok(authService.getCurrentUser(authentication));
     }
 }
