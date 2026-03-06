@@ -29,7 +29,7 @@ public class Project {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    protected Project() {
+    public Project() {
     }
 
     public UUID getId() {

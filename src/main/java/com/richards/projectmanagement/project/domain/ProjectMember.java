@@ -28,7 +28,7 @@ public class ProjectMember {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    protected ProjectMember() {
+    public ProjectMember() {
     }
 
     public UUID getId() {
