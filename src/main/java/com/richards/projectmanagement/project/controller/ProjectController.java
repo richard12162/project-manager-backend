@@ -1,7 +1,6 @@
 package com.richards.projectmanagement.project.controller;
 
-import com.richards.projectmanagement.project.dto.CreateProjectRequest;
-import com.richards.projectmanagement.project.dto.ProjectResponse;
+import com.richards.projectmanagement.project.dto.*;
 import com.richards.projectmanagement.project.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -40,5 +39,22 @@ public class ProjectController {
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getMyProjects(Authentication authentication) {
         return ResponseEntity.ok(projectService.getMyProjects(authentication));
+    }
+
+    @GetMapping("/{projectId}/members")
+    public ResponseEntity<List<ProjectMemberResponse>> getProjectMembers(
+            @PathVariable UUID projectId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(projectService.getProjectMembers(projectId, authentication));
+    }
+
+    @PostMapping("/{projectId}/members")
+    public ResponseEntity<ProjectMemberResponse> addProjectMember(
+            @PathVariable UUID projectId,
+            @RequestBody @Valid AddProjectMemberRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.status(201).body(projectService.addProjectMember(projectId, request, authentication));
     }
 }
