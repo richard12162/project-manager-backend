@@ -29,4 +29,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(apiError);
     }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials(
+            InvalidCredentialsException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
 }
