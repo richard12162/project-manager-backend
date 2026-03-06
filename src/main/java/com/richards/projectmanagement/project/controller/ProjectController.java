@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/projects")
 public class ProjectController {
@@ -24,5 +27,18 @@ public class ProjectController {
             Authentication authentication
     ) {
         return ResponseEntity.status(201).body(projectService.createProject(request, authentication));
+    }
+
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectResponse> getProjectById(
+            @PathVariable UUID projectId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(projectService.getProjectById(projectId, authentication));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectResponse>> getMyProjects(Authentication authentication) {
+        return ResponseEntity.ok(projectService.getMyProjects(authentication));
     }
 }

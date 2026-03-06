@@ -47,4 +47,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(apiError);
     }
+
+    @ExceptionHandler(ProjectAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleProjectAccessDenied(
+            ProjectAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
 }

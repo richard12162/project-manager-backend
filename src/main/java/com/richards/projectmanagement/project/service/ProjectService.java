@@ -1,5 +1,6 @@
 package com.richards.projectmanagement.project.service;
 
+import com.richards.projectmanagement.common.exception.ProjectAccessDeniedException;
 import com.richards.projectmanagement.project.domain.Project;
 import com.richards.projectmanagement.project.domain.ProjectMember;
 import com.richards.projectmanagement.project.domain.ProjectRole;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,14 +55,43 @@ public class ProjectService {
 
         projectMemberRepository.save(ownerMembership);
 
+        return toResponse(savedProject);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectResponse getProjectById(UUID projectId, Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+
+        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, currentUser.getId());
+        if (!isMember) {
+            throw new ProjectAccessDeniedException(projectId);
+        }
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectAccessDeniedException(projectId));
+
+        return toResponse(project);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProjectResponse> getMyProjects(Authentication authentication) {
+        User currentUser = (User) authentication.getPrincipal();
+
+        return projectRepository.findAllByMemberUserId(currentUser.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private ProjectResponse toResponse(Project project) {
         return new ProjectResponse(
-                savedProject.getId(),
-                savedProject.getName(),
-                savedProject.getDescription(),
-                savedProject.getOwner().getId(),
-                savedProject.getOwner().getEmail(),
-                savedProject.getCreatedAt(),
-                savedProject.getUpdatedAt()
+                project.getId(),
+                project.getName(),
+                project.getDescription(),
+                project.getOwner().getId(),
+                project.getOwner().getEmail(),
+                project.getCreatedAt(),
+                project.getUpdatedAt()
         );
     }
 }
