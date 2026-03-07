@@ -1,5 +1,6 @@
 package com.richards.projectmanagement.task.service;
 
+import com.richards.projectmanagement.common.dto.PagedResponse;
 import com.richards.projectmanagement.common.exception.InvalidTaskAssigneeException;
 import com.richards.projectmanagement.common.exception.ProjectNotFoundException;
 import com.richards.projectmanagement.common.exception.TaskAccessDeniedException;
@@ -16,14 +17,16 @@ import com.richards.projectmanagement.task.dto.UpdateTaskAssignmentRequest;
 import com.richards.projectmanagement.task.dto.UpdateTaskRequest;
 import com.richards.projectmanagement.task.dto.UpdateTaskStatusRequest;
 import com.richards.projectmanagement.task.repository.TaskRepository;
+import com.richards.projectmanagement.task.repository.TaskSpecifications;
 import com.richards.projectmanagement.user.domain.User;
 import com.richards.projectmanagement.user.repository.UserRepository;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -90,7 +93,16 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponse> getTasksByProject(UUID projectId, Authentication authentication) {
+    public PagedResponse<TaskResponse> getTasksByProject(
+            UUID projectId,
+            TaskStatus status,
+            TaskPriority priority,
+            UUID assigneeId,
+            int page,
+            int size,
+            String sort,
+            Authentication authentication
+    ) {
         User currentUser = (User) authentication.getPrincipal();
 
         ensureProjectMember(projectId, currentUser.getId());
@@ -99,10 +111,26 @@ public class TaskService {
             throw new ProjectNotFoundException(projectId);
         }
 
-        return taskRepository.findAllByProjectIdOrderByCreatedAtDesc(projectId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        Sort sortSpec = buildSort(sort);
+        Pageable pageable = PageRequest.of(page, size, sortSpec);
+
+        Specification<Task> specification = Specification
+                .where(TaskSpecifications.hasProjectId(projectId))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.hasAssigneeId(assigneeId));
+
+        Page<Task> tasksPage = taskRepository.findAll(specification, pageable);
+
+        return new PagedResponse<>(
+                tasksPage.getContent().stream().map(this::toResponse).toList(),
+                tasksPage.getNumber(),
+                tasksPage.getSize(),
+                tasksPage.getTotalElements(),
+                tasksPage.getTotalPages(),
+                tasksPage.isFirst(),
+                tasksPage.isLast()
+        );
     }
 
     @Transactional
@@ -193,6 +221,17 @@ public class TaskService {
     private Task findTaskOrThrow(UUID taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
+    }
+
+    private Sort buildSort(String sort) {
+        return switch (sort) {
+            case "createdAtAsc" -> Sort.by(Sort.Direction.ASC, "createdAt");
+            case "dueDateAsc" -> Sort.by(Sort.Direction.ASC, "dueDate");
+            case "dueDateDesc" -> Sort.by(Sort.Direction.DESC, "dueDate");
+            case "priorityAsc" -> Sort.by(Sort.Direction.ASC, "priority");
+            case "priorityDesc" -> Sort.by(Sort.Direction.DESC, "priority");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
     }
 
     private TaskResponse toResponse(Task task) {

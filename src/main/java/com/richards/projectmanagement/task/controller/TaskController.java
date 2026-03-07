@@ -1,5 +1,8 @@
 package com.richards.projectmanagement.task.controller;
 
+import com.richards.projectmanagement.common.dto.PagedResponse;
+import com.richards.projectmanagement.task.domain.TaskPriority;
+import com.richards.projectmanagement.task.domain.TaskStatus;
 import com.richards.projectmanagement.task.dto.CreateTaskRequest;
 import com.richards.projectmanagement.task.dto.TaskResponse;
 import com.richards.projectmanagement.task.dto.UpdateTaskAssignmentRequest;
@@ -11,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,11 +35,28 @@ public class TaskController {
     }
 
     @GetMapping("/projects/{projectId}/tasks")
-    public ResponseEntity<List<TaskResponse>> getTasksByProject(
+    public ResponseEntity<PagedResponse<TaskResponse>> getTasksByProject(
             @PathVariable UUID projectId,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority,
+            @RequestParam(required = false) UUID assigneeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAtDesc") String sort,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(taskService.getTasksByProject(projectId, authentication));
+        return ResponseEntity.ok(
+                taskService.getTasksByProject(
+                        projectId,
+                        status,
+                        priority,
+                        assigneeId,
+                        page,
+                        size,
+                        sort,
+                        authentication
+                )
+        );
     }
 
     @PatchMapping("/tasks/{taskId}")
