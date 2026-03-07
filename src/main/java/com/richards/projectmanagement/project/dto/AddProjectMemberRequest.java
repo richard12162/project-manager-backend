@@ -9,4 +9,5 @@ public record AddProjectMemberRequest(
         @Email(message = "email must be valid")
         String email
 
-) {}
+) {
+}

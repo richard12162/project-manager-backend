@@ -10,4 +10,5 @@ public record PagedResponse<T>(
         int totalPages,
         boolean first,
         boolean last
-) {}
+) {
+}

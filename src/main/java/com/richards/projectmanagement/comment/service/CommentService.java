@@ -1,5 +1,7 @@
 package com.richards.projectmanagement.comment.service;
 
+import com.richards.projectmanagement.activity.domain.ActivityType;
+import com.richards.projectmanagement.activity.service.ActivityLogService;
 import com.richards.projectmanagement.comment.domain.Comment;
 import com.richards.projectmanagement.comment.dto.CommentResponse;
 import com.richards.projectmanagement.comment.dto.CreateCommentRequest;
@@ -27,15 +29,18 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ActivityLogService activityLogService;
 
     public CommentService(
             CommentRepository commentRepository,
             TaskRepository taskRepository,
-            ProjectMemberRepository projectMemberRepository
+            ProjectMemberRepository projectMemberRepository,
+            ActivityLogService activityLogService
     ) {
         this.commentRepository = commentRepository;
         this.taskRepository = taskRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
@@ -62,6 +67,15 @@ public class CommentService {
         comment.setUpdatedAt(now);
 
         Comment savedComment = commentRepository.save(comment);
+
+        activityLogService.log(
+                task.getProject(),
+                currentUser,
+                ActivityType.COMMENT_ADDED,
+                savedComment.getId(),
+                "COMMENT",
+                "Added comment to task: " + task.getTitle()
+        );
 
         return toResponse(savedComment);
     }

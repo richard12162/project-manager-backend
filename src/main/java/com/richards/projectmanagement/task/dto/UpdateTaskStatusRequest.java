@@ -8,4 +8,5 @@ public record UpdateTaskStatusRequest(
         @NotNull(message = "status is required")
         TaskStatus status
 
-) {}
+) {
+}

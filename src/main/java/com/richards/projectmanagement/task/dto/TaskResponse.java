@@ -15,4 +15,5 @@ public record TaskResponse(
         OffsetDateTime dueDate,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
-) {}
+) {
+}

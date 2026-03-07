@@ -9,4 +9,5 @@ public record ProjectMemberResponse(
         String email,
         String role,
         OffsetDateTime joinedAt
-) {}
+) {
+}

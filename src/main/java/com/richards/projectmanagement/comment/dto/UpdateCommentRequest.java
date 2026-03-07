@@ -9,4 +9,5 @@ public record UpdateCommentRequest(
         @Size(max = 5000, message = "content must be at most 5000 characters")
         String content
 
-) {}
+) {
+}

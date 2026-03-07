@@ -1,5 +1,7 @@
 package com.richards.projectmanagement.task.service;
 
+import com.richards.projectmanagement.activity.domain.ActivityType;
+import com.richards.projectmanagement.activity.service.ActivityLogService;
 import com.richards.projectmanagement.common.dto.PagedResponse;
 import com.richards.projectmanagement.common.exception.InvalidTaskAssigneeException;
 import com.richards.projectmanagement.common.exception.ProjectNotFoundException;
@@ -35,17 +37,20 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
     public TaskService(
             TaskRepository taskRepository,
             ProjectRepository projectRepository,
             ProjectMemberRepository projectMemberRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            ActivityLogService activityLogService
     ) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.userRepository = userRepository;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
@@ -87,6 +92,15 @@ public class TaskService {
         task.setUpdatedAt(now);
 
         Task savedTask = taskRepository.save(task);
+
+        activityLogService.log(
+                project,
+                currentUser,
+                ActivityType.TASK_CREATED,
+                savedTask.getId(),
+                "TASK",
+                "Created task: " + savedTask.getTitle()
+        );
 
         return toResponse(savedTask);
     }
@@ -169,10 +183,23 @@ public class TaskService {
 
         ensureProjectMember(projectId, currentUser.getId());
 
+        TaskStatus oldStatus = task.getStatus();
+
         task.setStatus(request.status());
         task.setUpdatedAt(OffsetDateTime.now());
 
         Task savedTask = taskRepository.save(task);
+
+        if (oldStatus != request.status()) {
+            activityLogService.log(
+                    task.getProject(),
+                    currentUser,
+                    ActivityType.TASK_STATUS_CHANGED,
+                    savedTask.getId(),
+                    "TASK",
+                    "Changed task status from " + oldStatus.name() + " to " + request.status().name()
+            );
+        }
 
         return toResponse(savedTask);
     }
@@ -190,6 +217,7 @@ public class TaskService {
 
         ensureProjectMember(projectId, currentUser.getId());
 
+        User previousAssignee = task.getAssignee();
         User assignee = null;
 
         if (request.assigneeId() != null) {
@@ -206,6 +234,20 @@ public class TaskService {
         task.setUpdatedAt(OffsetDateTime.now());
 
         Task savedTask = taskRepository.save(task);
+
+        String oldAssigneeText = previousAssignee != null ? previousAssignee.getEmail() : "unassigned";
+        String newAssigneeText = assignee != null ? assignee.getEmail() : "unassigned";
+
+        if (!oldAssigneeText.equals(newAssigneeText)) {
+            activityLogService.log(
+                    task.getProject(),
+                    currentUser,
+                    ActivityType.TASK_ASSIGNEE_CHANGED,
+                    savedTask.getId(),
+                    "TASK",
+                    "Changed task assignee from " + oldAssigneeText + " to " + newAssigneeText
+            );
+        }
 
         return toResponse(savedTask);
     }

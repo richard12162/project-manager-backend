@@ -11,4 +11,5 @@ public record ProjectResponse(
         String ownerEmail,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
-) {}
+) {
+}

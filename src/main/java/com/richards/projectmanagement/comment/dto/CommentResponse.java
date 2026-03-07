@@ -11,4 +11,5 @@ public record CommentResponse(
         String content,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
-) {}
+) {
+}

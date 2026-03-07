@@ -4,4 +4,5 @@ import java.util.UUID;
 
 public record UpdateTaskAssignmentRequest(
         UUID assigneeId
-) {}
+) {
+}
