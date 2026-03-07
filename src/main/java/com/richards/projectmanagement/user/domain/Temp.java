@@ -1,12 +1,8 @@
 package com.richards.projectmanagement.user.domain;
 
 import com.richards.projectmanagement.user.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Component
 public class Temp implements CommandLineRunner {

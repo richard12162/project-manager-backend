@@ -191,4 +191,58 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(apiError);
     }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiError> handleCommentNotFound(
+            CommentNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
+
+    @ExceptionHandler(CommentAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleCommentAccessDenied(
+            CommentAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
+
+    @ExceptionHandler(CommentOwnershipRequiredException.class)
+    public ResponseEntity<ApiError> handleCommentOwnershipRequired(
+            CommentOwnershipRequiredException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
 }

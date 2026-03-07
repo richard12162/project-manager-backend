@@ -1,10 +1,6 @@
 package com.richards.projectmanagement.auth.controller;
 
-import com.richards.projectmanagement.auth.dto.AuthResponse;
-import com.richards.projectmanagement.auth.dto.CurrentUserResponse;
-import com.richards.projectmanagement.auth.dto.LoginRequest;
-import com.richards.projectmanagement.auth.dto.RegisterRequest;
-import com.richards.projectmanagement.auth.dto.RegisterResponse;
+import com.richards.projectmanagement.auth.dto.*;
 import com.richards.projectmanagement.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
