@@ -173,4 +173,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(apiError);
     }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<ApiError> handleTaskNotFound(
+            TaskNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
 }

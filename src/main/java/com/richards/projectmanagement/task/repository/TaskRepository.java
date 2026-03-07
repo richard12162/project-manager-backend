@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     List<Task> findAllByProjectIdOrderByCreatedAtDesc(UUID projectId);
+
+    boolean existsByIdAndProjectId(UUID taskId, UUID projectId);
 }

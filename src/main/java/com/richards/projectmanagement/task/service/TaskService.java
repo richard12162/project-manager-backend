@@ -3,6 +3,7 @@ package com.richards.projectmanagement.task.service;
 import com.richards.projectmanagement.common.exception.InvalidTaskAssigneeException;
 import com.richards.projectmanagement.common.exception.ProjectNotFoundException;
 import com.richards.projectmanagement.common.exception.TaskAccessDeniedException;
+import com.richards.projectmanagement.common.exception.TaskNotFoundException;
 import com.richards.projectmanagement.project.domain.Project;
 import com.richards.projectmanagement.project.repository.ProjectMemberRepository;
 import com.richards.projectmanagement.project.repository.ProjectRepository;
@@ -11,6 +12,9 @@ import com.richards.projectmanagement.task.domain.TaskPriority;
 import com.richards.projectmanagement.task.domain.TaskStatus;
 import com.richards.projectmanagement.task.dto.CreateTaskRequest;
 import com.richards.projectmanagement.task.dto.TaskResponse;
+import com.richards.projectmanagement.task.dto.UpdateTaskAssignmentRequest;
+import com.richards.projectmanagement.task.dto.UpdateTaskRequest;
+import com.richards.projectmanagement.task.dto.UpdateTaskStatusRequest;
 import com.richards.projectmanagement.task.repository.TaskRepository;
 import com.richards.projectmanagement.user.domain.User;
 import com.richards.projectmanagement.user.repository.UserRepository;
@@ -101,11 +105,94 @@ public class TaskService {
                 .toList();
     }
 
+    @Transactional
+    public TaskResponse updateTask(
+            UUID taskId,
+            UpdateTaskRequest request,
+            Authentication authentication
+    ) {
+        User currentUser = (User) authentication.getPrincipal();
+
+        Task task = findTaskOrThrow(taskId);
+        UUID projectId = task.getProject().getId();
+
+        ensureProjectMember(projectId, currentUser.getId());
+
+        task.setTitle(request.title().trim());
+        task.setDescription(request.description() != null ? request.description().trim() : null);
+        task.setPriority(request.priority() != null ? request.priority() : TaskPriority.MEDIUM);
+        task.setDueDate(request.dueDate());
+        task.setUpdatedAt(OffsetDateTime.now());
+
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
+    }
+
+    @Transactional
+    public TaskResponse updateTaskStatus(
+            UUID taskId,
+            UpdateTaskStatusRequest request,
+            Authentication authentication
+    ) {
+        User currentUser = (User) authentication.getPrincipal();
+
+        Task task = findTaskOrThrow(taskId);
+        UUID projectId = task.getProject().getId();
+
+        ensureProjectMember(projectId, currentUser.getId());
+
+        task.setStatus(request.status());
+        task.setUpdatedAt(OffsetDateTime.now());
+
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
+    }
+
+    @Transactional
+    public TaskResponse updateTaskAssignment(
+            UUID taskId,
+            UpdateTaskAssignmentRequest request,
+            Authentication authentication
+    ) {
+        User currentUser = (User) authentication.getPrincipal();
+
+        Task task = findTaskOrThrow(taskId);
+        UUID projectId = task.getProject().getId();
+
+        ensureProjectMember(projectId, currentUser.getId());
+
+        User assignee = null;
+
+        if (request.assigneeId() != null) {
+            assignee = userRepository.findById(request.assigneeId())
+                    .orElseThrow(() -> new InvalidTaskAssigneeException(request.assigneeId(), projectId));
+
+            boolean assigneeIsMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, assignee.getId());
+            if (!assigneeIsMember) {
+                throw new InvalidTaskAssigneeException(assignee.getId(), projectId);
+            }
+        }
+
+        task.setAssignee(assignee);
+        task.setUpdatedAt(OffsetDateTime.now());
+
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
+    }
+
     private void ensureProjectMember(UUID projectId, UUID userId) {
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
         if (!isMember) {
             throw new TaskAccessDeniedException(projectId);
         }
+    }
+
+    private Task findTaskOrThrow(UUID taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
     }
 
     private TaskResponse toResponse(Task task) {
