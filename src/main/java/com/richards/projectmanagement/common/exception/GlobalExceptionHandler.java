@@ -137,4 +137,40 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(apiError);
     }
+
+    @ExceptionHandler(TaskAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleTaskAccessDenied(
+            TaskAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
+
+    @ExceptionHandler(InvalidTaskAssigneeException.class)
+    public ResponseEntity<ApiError> handleInvalidTaskAssignee(
+            InvalidTaskAssigneeException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        ApiError apiError = new ApiError(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                OffsetDateTime.now()
+        );
+
+        return ResponseEntity.status(status).body(apiError);
+    }
 }
