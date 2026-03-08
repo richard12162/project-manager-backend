@@ -21,8 +21,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void register_shouldReturn201_whenRequestIsValid() throws Exception {
+        String email = uniqueEmail("test");
+
         RegisterRequest request = new RegisterRequest(
-                "test@example.com",
+                email,
                 "password123"
         );
 
@@ -31,15 +33,17 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.role").value("USER"))
                 .andExpect(jsonPath("$.createdAt").exists());
     }
 
     @Test
     void register_shouldReturn409_whenEmailAlreadyExists() throws Exception {
+        String email = uniqueEmail("duplicate");
+
         RegisterRequest request = new RegisterRequest(
-                "duplicate@example.com",
+                email,
                 "password123"
         );
 
@@ -52,13 +56,15 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Email already in use: duplicate@example.com"));
+                .andExpect(jsonPath("$.message").value("Email already in use: " + email));
     }
 
     @Test
     void login_shouldReturn200AndToken_whenCredentialsAreValid() throws Exception {
+        String email = uniqueEmail("login");
+
         RegisterRequest registerRequest = new RegisterRequest(
-                "login@example.com",
+                email,
                 "password123"
         );
 
@@ -68,7 +74,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
 
         LoginRequest loginRequest = new LoginRequest(
-                "login@example.com",
+                email,
                 "password123"
         );
 
@@ -82,8 +88,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void login_shouldReturn401_whenPasswordIsWrong() throws Exception {
+        String email = uniqueEmail("wrongpass");
+
         RegisterRequest registerRequest = new RegisterRequest(
-                "wrongpass@example.com",
+                email,
                 "password123"
         );
 
@@ -93,7 +101,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
 
         LoginRequest loginRequest = new LoginRequest(
-                "wrongpass@example.com",
+                email,
                 "wrongpassword"
         );
 

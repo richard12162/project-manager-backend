@@ -2,8 +2,6 @@ package com.richards.projectmanagement.comment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.richards.projectmanagement.auth.dto.LoginRequest;
-import com.richards.projectmanagement.auth.dto.RegisterRequest;
 import com.richards.projectmanagement.comment.dto.CreateCommentRequest;
 import com.richards.projectmanagement.project.dto.CreateProjectRequest;
 import com.richards.projectmanagement.support.AbstractIntegrationTest;
@@ -27,7 +25,7 @@ class CommentIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createComment_shouldReturn201_whenUserIsProjectMember() throws Exception {
-        String token = registerAndLogin("commenter@example.com", "password123");
+        String token = registerAndLogin(uniqueEmail("commenter"), "password123");
         String projectId = createProjectAndReturnId(token, "Comment Project", "Project for comments");
         String taskId = createTaskAndReturnId(token, projectId, "Task with comments");
 
@@ -44,7 +42,7 @@ class CommentIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createComment_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
-        String token = registerAndLogin("owner@example.com", "password123");
+        String token = registerAndLogin(uniqueEmail("comment-owner"), "password123");
         String projectId = createProjectAndReturnId(token, "Comment Auth Project", "Project for auth test");
         String taskId = createTaskAndReturnId(token, projectId, "Task with comments");
 
@@ -58,8 +56,8 @@ class CommentIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createComment_shouldReturn403_whenUserIsNotProjectMember() throws Exception {
-        String ownerToken = registerAndLogin("owner2@example.com", "password123");
-        String strangerToken = registerAndLogin("stranger2@example.com", "password123");
+        String ownerToken = registerAndLogin(uniqueEmail("owner"), "password123");
+        String strangerToken = registerAndLogin(uniqueEmail("stranger"), "password123");
 
         String projectId = createProjectAndReturnId(ownerToken, "Private Comment Project", "Project is private");
         String taskId = createTaskAndReturnId(ownerToken, projectId, "Private task");
@@ -75,7 +73,7 @@ class CommentIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void getCommentsByTask_shouldReturn200_whenUserIsProjectMember() throws Exception {
-        String token = registerAndLogin("reader-comments@example.com", "password123");
+        String token = registerAndLogin(uniqueEmail("reader-comments"), "password123");
         String projectId = createProjectAndReturnId(token, "Read Comments Project", "Project for reading comments");
         String taskId = createTaskAndReturnId(token, projectId, "Task with readable comments");
 
@@ -92,28 +90,6 @@ class CommentIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").exists())
                 .andExpect(jsonPath("$[0].content").value("Stored comment"));
-    }
-
-    private String registerAndLogin(String email, String password) throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest(email, password);
-
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isCreated());
-
-        LoginRequest loginRequest = new LoginRequest(email, password);
-
-        String loginResponse = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        JsonNode jsonNode = objectMapper.readTree(loginResponse);
-        return jsonNode.get("token").asText();
     }
 
     private String createProjectAndReturnId(String token, String name, String description) throws Exception {

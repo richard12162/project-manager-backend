@@ -1,9 +1,6 @@
 package com.richards.projectmanagement.project;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.richards.projectmanagement.auth.dto.LoginRequest;
-import com.richards.projectmanagement.auth.dto.RegisterRequest;
 import com.richards.projectmanagement.project.dto.CreateProjectRequest;
 import com.richards.projectmanagement.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -23,31 +20,9 @@ class ProjectIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createProject_shouldReturn201_whenUserIsAuthenticated() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest(
-                "project-owner@example.com",
-                "password123"
-        );
 
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isCreated());
-
-        LoginRequest loginRequest = new LoginRequest(
-                "project-owner@example.com",
-                "password123"
-        );
-
-        String loginResponse = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        JsonNode jsonNode = objectMapper.readTree(loginResponse);
-        String token = jsonNode.get("token").asText();
+        String email = uniqueEmail("project-owner");
+        String token = registerAndLogin(email, "password123");
 
         CreateProjectRequest request = new CreateProjectRequest(
                 "My Test Project",
@@ -62,11 +37,12 @@ class ProjectIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value("My Test Project"))
                 .andExpect(jsonPath("$.description").value("Integration test project"))
-                .andExpect(jsonPath("$.ownerEmail").value("project-owner@example.com"));
+                .andExpect(jsonPath("$.ownerEmail").value(email));
     }
 
     @Test
     void createProject_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
+
         CreateProjectRequest request = new CreateProjectRequest(
                 "Unauthorized Project",
                 "Should fail"
@@ -76,5 +52,23 @@ class ProjectIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createProject_shouldReturn400_whenNameIsMissing() throws Exception {
+
+        String token = registerAndLogin(uniqueEmail("validation-project"), "password123");
+
+        String invalidProjectJson = """
+        {
+          "description": "Project without name"
+        }
+        """;
+
+        mockMvc.perform(post("/projects")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidProjectJson))
+                .andExpect(status().isBadRequest());
     }
 }
