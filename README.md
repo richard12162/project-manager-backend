@@ -97,6 +97,3 @@ http://localhost:8080/swagger-ui/index.html
 5.  Add comments to tasks
 6.  View activity logs
 
-## Author
-
-Richard Schone
