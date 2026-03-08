@@ -6,8 +6,6 @@ with Spring Boot.
 The application supports user authentication, project creation, task
 management, comments, and activity logs.
 
-------------------------------------------------------------------------
-
 ## Tech Stack
 
 -   Java 21
@@ -23,8 +21,6 @@ management, comments, and activity logs.
 -   Docker Compose
 -   Maven
 
-------------------------------------------------------------------------
-
 ## Features
 
 -   User registration and login with JWT authentication
@@ -36,22 +32,18 @@ management, comments, and activity logs.
 -   Database migrations with Flyway
 -   Integration tests with Testcontainers
 
-------------------------------------------------------------------------
-
 ## Project Structure
 
 src/main/java/com.richards.projectmanagement
 
-- auth        – authentication and JWT
-- project     – project management
-- task        – task management
-- comment     – task comments
-- activity    – activity logging
-- user        – user domain
-- config      – security configuration
-- common      – shared exceptions and utilities
-
-------------------------------------------------------------------------
+-   auth -- authentication and JWT
+-   project -- project management
+-   task -- task management
+-   comment -- task comments
+-   activity -- activity logging
+-   user -- user domain
+-   config -- security configuration
+-   common -- shared exceptions and utilities
 
 ## Running the Project
 
@@ -65,7 +57,9 @@ src/main/java/com.richards.projectmanagement
 
 The project uses PostgreSQL via Docker Compose.
 
+``` bash
 docker compose up -d
+```
 
 Database configuration:
 
@@ -76,11 +70,11 @@ port: 5432
 
 ### Run the application
 
+``` bash
 ./mvnw spring-boot:run
+```
 
 Or run the main class from your IDE.
-
-------------------------------------------------------------------------
 
 ## API Documentation
 
@@ -88,13 +82,11 @@ Swagger UI:
 
 http://localhost:8080/swagger-ui/index.html
 
-------------------------------------------------------------------------
-
 ## Running Tests
 
+``` bash
 ./mvnw test
-
-------------------------------------------------------------------------
+```
 
 ## Example Workflow
 
@@ -104,8 +96,6 @@ http://localhost:8080/swagger-ui/index.html
 4.  Add tasks to the project
 5.  Add comments to tasks
 6.  View activity logs
-
-------------------------------------------------------------------------
 
 ## Author
 
