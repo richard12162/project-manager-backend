@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -80,5 +81,12 @@ public class TaskController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(taskService.updateTaskAssignment(taskId, request, authentication));
+    }
+
+    @GetMapping("/tasks/my")
+    public ResponseEntity<List<TaskResponse>> getMyTasks(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(taskService.getMyTasks(authentication));
     }
 }

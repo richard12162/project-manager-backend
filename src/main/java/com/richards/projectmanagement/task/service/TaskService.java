@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -251,6 +253,15 @@ public class TaskService {
 
         return toResponse(savedTask);
     }
+
+    @Transactional(readOnly = true)
+    public List<TaskResponse> getMyTasks(
+            Authentication authentication
+    )
+        {
+        User currentUser = (User) authentication.getPrincipal();
+        return taskRepository.findAllByAssigneeId(currentUser.getId()).stream().map(this::toResponse).toList();
+        }
 
     private void ensureProjectMember(UUID projectId, UUID userId) {
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
