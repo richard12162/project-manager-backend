@@ -6,6 +6,7 @@ import java.util.UUID;
 public record TaskResponse(
         UUID id,
         UUID projectId,
+        String projectName,
         String title,
         String description,
         String status,

@@ -290,6 +290,7 @@ public class TaskService {
         return new TaskResponse(
                 task.getId(),
                 task.getProject().getId(),
+                task.getProject().getName(),
                 task.getTitle(),
                 task.getDescription(),
                 task.getStatus().name(),
